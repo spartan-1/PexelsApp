@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">PexelsApp</string>
+    <string name="error_empty_recyclerview">No data available</string>
+    <string name="search_hint">Search</string>
+    <string name="not_available">Details not available</string>
+    <string name="copyright_info">Photos provided by <a href="https://www.pexels.com/">Pexels</a></string>
+    <string name="photographer">Clicked by : </string>
 </resources>
