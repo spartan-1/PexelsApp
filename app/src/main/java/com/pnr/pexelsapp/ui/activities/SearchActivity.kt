@@ -1,9 +1,12 @@
 package com.pnr.pexelsapp.ui.activities
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SearchView
@@ -18,13 +21,14 @@ import com.pnr.pexelsapp.app.PexelsApp
 import com.pnr.pexelsapp.model.PexelPhoto
 import com.pnr.pexelsapp.ui.adapters.PhotosListAdapter
 import com.pnr.pexelsapp.ui.viewmodels.SearchViewModel
+import com.pnr.pexelsapp.util.CustomScrollListener
 import com.pnr.pexelsapp.util.vmutil.ViewModelFactory
 import javax.inject.Inject
 
 /**
  * SearchActivity class
  */
-class SearchActivity : AppCompatActivity() {
+class SearchActivity : AppCompatActivity(), PhotosListAdapter.OnItemClickListener {
 
     private lateinit var searchViewModel: SearchViewModel
 
@@ -49,9 +53,17 @@ class SearchActivity : AppCompatActivity() {
     @BindView(R.id.text_loading_error)
     lateinit var errorMessage: AppCompatTextView
 
+    @BindView(R.id.loadmore_progress)
+    lateinit var loadMoreProgress: ProgressBar
+
+    @BindView(R.id.loadmore_errorlayout)
+    lateinit var scrollLoadError: RelativeLayout
+
     private lateinit var adapter: PhotosListAdapter
 
-    private var searchCompleted = false
+    var pageCount = 1
+
+    var searchString = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,13 +79,25 @@ class SearchActivity : AppCompatActivity() {
     }
 
     /**
+     * To display the original image in browser
+     *
+     * @param pexelPhoto
+     */
+    override fun onThumbnailClick(pexelPhoto: PexelPhoto) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(pexelPhoto.src.original))
+        startActivity(intent)
+    }
+
+    /**
      * function to init RecyclerView
      *
      */
     private fun initRecyclerView() {
-        adapter = PhotosListAdapter(ArrayList())
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        adapter = PhotosListAdapter(ArrayList(), this)
+        val manager = LinearLayoutManager(this)
+        recyclerView.layoutManager = manager
         recyclerView.adapter = adapter
+        recyclerView.addOnScrollListener(mScrollListener(manager))
     }
 
     /**
@@ -87,7 +111,11 @@ class SearchActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextSubmit(query: String): Boolean {
-                search(query)
+                searchString = query
+                showProgressView()
+                pageCount = 1
+                adapter.clearPhotos()
+                search()
                 return false
             }
         })
@@ -96,12 +124,10 @@ class SearchActivity : AppCompatActivity() {
     /**
      * helper function to search
      *
-     * @param query
+     *
      */
-    private fun search(query: String) {
-        searchCompleted = true
-        showProgressView()
-        searchViewModel.loadData(query, 1)
+    private fun search() {
+        searchViewModel.loadData(searchString, pageCount++)
             .observe(this, pexelsPhotosDataObserver)
     }
 
@@ -112,13 +138,28 @@ class SearchActivity : AppCompatActivity() {
         androidx.lifecycle.Observer<List<PexelPhoto>> { searchResults ->
             searchResults?.let {
                 adapter.updatePhotos(it)
+                clearEndlessScrollProgress()
                 if (it.size > 0) {
                     showDataView()
-                } else {
+                } else if (adapter.itemCount == 0) {
                     showErrorView()
                 }
             } ?: run {
-                showErrorView()
+                if (adapter.itemCount == 0)
+                    showErrorView()
+                else
+                    showEndlessScrollError()
+            }
+        }
+
+    /**
+     * Listener to check if end of recycler view is reached
+     */
+    private fun mScrollListener(manager: LinearLayoutManager) =
+        object : CustomScrollListener(manager) {
+            override fun onLoadMoreData(page: Int, totalItemsCount: Int, view: RecyclerView) {
+                showEndlessScrollProgress()
+                search()
             }
         }
 
@@ -154,5 +195,30 @@ class SearchActivity : AppCompatActivity() {
         errorMessage.visibility = View.GONE
         copyRightInfo.visibility = View.GONE
     }
-}
 
+
+    /**
+     * function to display scroll more data error
+     */
+    private fun showEndlessScrollError() {
+        scrollLoadError.visibility = View.VISIBLE
+        loadMoreProgress.visibility = View.GONE
+    }
+
+    /**
+     * function to display scroll more progress
+     */
+    private fun showEndlessScrollProgress() {
+        scrollLoadError.visibility = View.GONE
+        loadMoreProgress.visibility = View.VISIBLE
+    }
+
+    /**
+     * function to clear scroll more progress
+     */
+    private fun clearEndlessScrollProgress() {
+        scrollLoadError.visibility = View.GONE
+        loadMoreProgress.visibility = View.GONE
+    }
+
+}

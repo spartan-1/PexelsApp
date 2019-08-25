@@ -19,9 +19,7 @@
         app:cardElevation="@dimen/dimen_card_elevation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dimen_card_common_margin"
-        android:layout_marginStart="@dimen/dimen_card_common_margin"
-        android:layout_marginEnd="@dimen/dimen_card_common_margin">
+        android:layout_margin="@dimen/dimen_common_margin">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/list_item_constraintlayout"
@@ -38,7 +36,7 @@
 
             <!--Image corresponding to info-->
             <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/image_info"
+                android:id="@+id/image_pexel"
                 android:layout_width="@dimen/dimen_0"
                 android:layout_height="wrap_content"
                 android:contentDescription="@null"
@@ -58,7 +56,7 @@
                 android:layout_margin="@dimen/dimen_2"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/image_info"
+                app:layout_constraintTop_toBottomOf="@id/image_pexel"
                 android:gravity="center_horizontal"
                 android:text="@{TextUtils.isEmpty(pexelPhoto.photographer) ? @string/not_available : @string/photographer + pexelPhoto.photographer}"
                 tools:text="Title"/>
@@ -68,7 +66,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:barrierDirection="start"
-                app:constraint_referenced_ids="image_info"/>
+                app:constraint_referenced_ids="image_pexel"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

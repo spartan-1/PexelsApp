@@ -5,4 +5,7 @@
     <string name="not_available">Details not available</string>
     <string name="copyright_info">Photos provided by <a href="https://www.pexels.com/">Pexels</a></string>
     <string name="photographer">Clicked by : </string>
+    <string name="retry_loading_list">Retry loading</string>
+    <string name="retry">Retry</string>
+    <string name="error_data_loading_list_progress">Failed to load data</string>
 </resources>
